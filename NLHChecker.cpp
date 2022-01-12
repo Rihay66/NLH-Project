@@ -1,9 +1,15 @@
 #include "NLHChecker.h"
+#include "SerialPort.h"
 
 using namespace PC_Check;
 
 bool CheckPort::checkForPort(bool isFound) {
 	while (true) {
+
+		if (!isFound) {
+			return false;
+		}
+
 		const char* ports[] = { "\\\\.\\COM0", "\\\\.\\COM1", "\\\\.\\COM2", "\\\\.\\COM3", "\\\\.\\COM4" };
 		int portSize = sizeof(ports) / sizeof(ports[0]);
 		for (int i = 0; i < portSize; i++)
@@ -11,6 +17,17 @@ bool CheckPort::checkForPort(bool isFound) {
 			ports[i] = portSelected;
 		}
 	}
-	if (isFound)
-		return false;
+}
+
+bool CheckPort::checkDevice() {
+	while (true) {
+		SerialPort device(portSelected);
+		if (!device.isConnected()) {
+			checkForPort(true);
+		}
+		else {
+			checkForPort(false);
+			return false;
+		}
+	}
 }
