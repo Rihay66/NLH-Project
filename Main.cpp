@@ -11,14 +11,15 @@ char incomingData[MAX_DATA_LENGTH];
 bool isFound = false;
 
 int main() {
-	SerialPort arduino(port);
-
 	CheckPort check;
 	check.checkForPort(isFound); //checks for every available port and might cycle through them until the correct port is found
 	port = check.portSelected; //Takes returned port char
 
+	SerialPort arduino(port);
+
 	if (arduino.isConnected()) {
 		isFound = true;
+		cout << "Port found on port " << port << endl;
 		cout << "Connection made" << endl << endl;
 	}
 	else {
@@ -30,16 +31,22 @@ int main() {
 		string data;
 		cin >> data;
 
-		char* charArray = new char[data.size() + 1];
-		copy(data.begin(), data.end(), charArray);
-		charArray[data.size()] = '\n';
+		//Checks if the input string is similar to the required set strings to send a output to device
+		if (data == "ON" || data == "OFF") {
+			char* charArray = new char[data.size() + 1];
+			copy(data.begin(), data.end(), charArray);
+			charArray[data.size()] = '\n';
 
-		arduino.writeSerialPort(charArray, MAX_DATA_LENGTH);
-		arduino.readSerialPort(output, MAX_DATA_LENGTH);
+			arduino.writeSerialPort(charArray, MAX_DATA_LENGTH);
+			arduino.readSerialPort(output, MAX_DATA_LENGTH);
 
-		cout << ">> " << output << endl;
+			cout << ">> " << output << endl;
 
-		delete[] charArray;
+			delete[] charArray;
+		}
+		else {
+			cout << "Unknown command" << endl;
+		}
 	}
 	return 0;
 }
