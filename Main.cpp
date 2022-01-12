@@ -6,8 +6,6 @@ using namespace std;
 #include"NLHChecker.h"
 using namespace PC_Check;
 char output[MAX_DATA_LENGTH];
-// change the name of the port with the port name of your computer
-// must remember that the backslashes are essential so do not remove them
 const char *port;
 char incomingData[MAX_DATA_LENGTH];
 bool isFound = false;
