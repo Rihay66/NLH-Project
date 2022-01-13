@@ -51,6 +51,8 @@ int main() {
 =======
 	SerialPort arduino(port);
 
+	SerialPort arduino(port);
+
 	if (arduino.isConnected()) {
 		isFound = true;
 		cout << "Port found on port " << port << endl;

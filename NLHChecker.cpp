@@ -1,6 +1,12 @@
 #include "NLHChecker.h"
 <<<<<<< HEAD
+<<<<<<< HEAD
 #include "SerialPort.h"
+=======
+#include <iostream>
+
+using namespace std;
+>>>>>>> e0177840b346a8117269e81eaa58b4672141ddd4
 =======
 #include <iostream>
 
@@ -11,12 +17,16 @@ using namespace PC_Check;
 
 bool CheckPort::checkForPort(bool isFound) {
 <<<<<<< HEAD
+<<<<<<< HEAD
 	while (true) {
 
 		if (!isFound) {
 			return false;
 		}
 
+=======
+	while (!isFound) {
+>>>>>>> e0177840b346a8117269e81eaa58b4672141ddd4
 =======
 	while (!isFound) {
 >>>>>>> e0177840b346a8117269e81eaa58b4672141ddd4
