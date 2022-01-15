@@ -1,16 +1,46 @@
 #include<iostream>
-using namespace std;
-#include<string>
-#include<stdlib.h>
+#include <windows.h>
+#include <stdio.h>
+#include <string>
 #include"SerialPort.h"
-#include"NLHChecker.h"
-using namespace PC_Check;
-char output[MAX_DATA_LENGTH];
-const char *port;
-char incomingData[MAX_DATA_LENGTH];
-bool isFound = false;
 
-int main() {
+using namespace std;
+
+char output[MAX_DATA_LENGTH];
+char incomingData[MAX_DATA_LENGTH];
+
+const char* port;
+
+int main(void) {
+	bool board_detected = false;
+	HANDLE hSerial = 0;
+	SerialPort arduino;
+	for (int i = 0; (i < maxports) && (board_detected != true); i++) 
+	{
+		port = arduino.Gen_Port_Name();
+
+		hSerial = arduino.Init_Serial(port);
+
+		if (hSerial != INVALID_HANDLE_VALUE)
+			board_detected = arduino.Wait_Ready(hSerial);
+		else
+			continue;
+	}
+	
+	if (board_detected == true)
+		cout << "\nBoard Found on Port: %s\n\n" << port << endl;
+	else
+		cout << "\nBoard could not be found!!!\n\n" << endl;
+	
+
+	Sleep(10000); //debugging
+
+
+	return 0;
+
+	//[] Make input to throw at the arduino
+
+	/*
 	CheckPort check;
 	while (!isFound) 
 	{
@@ -47,4 +77,5 @@ int main() {
 			return 0;
 		}
 	}
+	*/
 }

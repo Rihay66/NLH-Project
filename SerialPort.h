@@ -1,28 +1,31 @@
-#ifndef SERIALPORT_H
-#define SERIALPORT_H
 
 #define ARDUINO_WAIT_TIME 2000
 #define MAX_DATA_LENGTH 255
 
+#define PORT_SIZE 5
+#define maxports 7
+
 #include <windows.h>
 #include <stdio.h>
-#include <stdlib.h>
-#include <array>
+#include <iostream>
+
+using namespace std;
 
 class SerialPort
 {
 private:
     HANDLE handler;
-    bool connected;
-    COMSTAT status;
-    DWORD errors;
+	COMSTAT status;
+	bool connected; //[] implement bool to be for future reference
+	DWORD errors;
 public:
-    SerialPort(const char* portName);
-    ~SerialPort();
+	int serial_params(HANDLE hSerial);
+	HANDLE Init_Serial(const char* portname);
+	const char* Gen_Port_Name(void);
+	int Wait_Ready(HANDLE hSerial);
 
-    int readSerialPort(char* buffer, unsigned int buf_size);
-    bool writeSerialPort(char* buffer, unsigned int buf_size);
-    bool isConnected();
+	int readSerialPort(char* buffer, unsigned int buf_size);
+	bool writeSerialPort(char* buffer, unsigned int buf_size);
+	//[] Function will be used later with the bool 'connected'
+	//bool isConnected();
 };
-
-#endif // SERIALPORT_H
