@@ -1,4 +1,7 @@
+#include <iostream>
 #include "SerialPort.h"
+
+using namespace std;
 
 namespace PC_Check {
 	class CheckPort {

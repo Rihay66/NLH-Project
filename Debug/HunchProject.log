@@ -1,4 +1,5 @@
 ﻿  Main.cpp
   NLHChecker.cpp
+  SerialPort.cpp
   Generating Code...
   HunchProject.vcxproj -> C:\Users\Noir\Documents\Projects\HunchProject\Debug\HunchProject.exe

@@ -1,14 +1,9 @@
 #include "NLHChecker.h"
-#include "SerialPort.h"
-#include <iostream>
-
-using namespace std;
 
 using namespace PC_Check;
 
 bool CheckPort::checkForPort(bool isFound) {
 	while (true) {
-
 		if (!isFound) {
 			return false;
 		}
@@ -17,7 +12,7 @@ bool CheckPort::checkForPort(bool isFound) {
 		cout << "selected port is " << portSize << endl;
 		for (int i = 0; i < portSize; i++)
 		{
-			ports[i] = portSelected;
+			portSelected = ports[i];
 		}
 	}
 }
