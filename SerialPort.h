@@ -16,7 +16,7 @@ class SerialPort
 private:
     HANDLE handler;
 	COMSTAT status;
-	bool connected; //[] implement bool to be for future reference
+	bool connected;
 	DWORD errors;
 public:
 	int serial_params(HANDLE hSerial);
@@ -26,6 +26,5 @@ public:
 
 	int readSerialPort(char* buffer, unsigned int buf_size);
 	bool writeSerialPort(char* buffer, unsigned int buf_size);
-	//[] Function will be used later with the bool 'connected'
-	//bool isConnected();
+	bool isConnected();
 };

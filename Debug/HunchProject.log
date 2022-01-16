@@ -1,5 +1,2 @@
 ﻿  Main.cpp
-  SerialPort.cpp
-  Generating Code...
-C:\Users\Noir\Documents\Projects\HunchProject\SerialPort.cpp(90): warning C4715: 'SerialPort::serial_params': not all control paths return a value
   HunchProject.vcxproj -> C:\Users\Noir\Documents\Projects\HunchProject\Debug\HunchProject.exe

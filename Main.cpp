@@ -32,9 +32,16 @@ int main(void) {
 	else
 		cout << "\nBoard could not be found!!!\n\n" << endl;
 	
+	//Tells if the boolean system works
+	if (arduino.isConnected()) {
+		printf("Arduino is connected!");		
+	}
+	else {
+		printf("ERROR: Arduino is not connected or something went wrong"); //Might be used to resolve issues with connectivity
+	}
 
+	//Similar to wait for milliseconds in c#
 	Sleep(10000); //debugging
-
 
 	return 0;
 

@@ -17,11 +17,14 @@ const char* SerialPort::Gen_Port_Name(void) {
 
 HANDLE SerialPort::Init_Serial(const char* portname) {
     
+    this->connected = false;
+
     printf("\n\nPortName: %s\n\n", portname);
     this->handler = CreateFileA(static_cast<LPCSTR>(portname), GENERIC_READ | GENERIC_WRITE, 0, 0, OPEN_EXISTING, FILE_FLAG_NO_BUFFERING, 0);
 
-    if (handler == INVALID_HANDLE_VALUE)
+    if (handler == INVALID_HANDLE_VALUE && this->connected)
     {
+        this->connected = false;
         FlushFileBuffers(handler); // flush buffers to tell Ardunio to bark it's data 
         CloseHandle(handler); // Prevent Handle leaks
         return INVALID_HANDLE_VALUE; // Move on to next port since this one doesn't exist
@@ -70,6 +73,7 @@ int SerialPort::serial_params(HANDLE hSerial) {
             printf("ALERT: could not set Serial port parameters\n");
         }
         else {
+            this->connected = true;
             PurgeComm(this->handler, PURGE_RXCLEAR | PURGE_TXCLEAR);
             Sleep(ARDUINO_WAIT_TIME);
         }
@@ -170,6 +174,10 @@ bool SerialPort::writeSerialPort(char* buffer, unsigned int buf_size)
     else return true;
 }
 
+bool SerialPort::isConnected()
+{
+    return this->connected;
+}
 
 /*
 SerialPort::SerialPort(const char* portName)
