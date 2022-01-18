@@ -7,6 +7,7 @@ const char* SerialPort::Gen_Port_Name(void) {
     const char* ports[] = { "\\\\.\\COM0", "\\\\.\\COM1", "\\\\.\\COM2", "\\\\.\\COM3", "\\\\.\\COM4" };
     int currentport = 0;
 
+    //[] Getting next port, might have to use some other way to receive back the port as well cycle through all the ports which the error is based on
     if (currentport > maxports)
         printf("ERROR"); // No more ports to try
     else

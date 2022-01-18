@@ -34,55 +34,41 @@ int main(void) {
 	
 	//Tells if the boolean system works
 	if (arduino.isConnected()) {
-		printf("Arduino is connected!");		
+		printf("Arduino is connected!\n\n");		
 	}
 	else {
-		printf("ERROR: Arduino is not connected or something went wrong"); //Might be used to resolve issues with connectivity
+		printf("ERROR: Arduino is not connected or something went wrong\n\n"); //Might be used to resolve issues with connectivity
 	}
 
 	//Similar to wait for milliseconds in c#
-	Sleep(10000); //debugging
+	Sleep(5000); //debugging
+	printf("Arduino Ready!\n\n");
 
-	return 0;
+	//[] Make a function that detects if the connected device is a arduino, which the arduino will contain a char that determines the connection
 
-	//[] Make input to throw at the arduino
+	while (arduino.isConnected()) {
+		cout << "Enter your command: ";
+		string data;
+		cin >> data;
 
-	/*
-	CheckPort check;
-	while (!isFound) 
-	{
-		//checks for every available port and might cycle through them until the correct port is found
-	    //Takes returned port char	
-		check.checkDevice();
-		if (!check.checkDevice()) {
-			port = check.portSelected;
-			SerialPort arduino(port);
-			if (arduino.isConnected()) {
-				isFound = false;
-				cout << "Connection made" << endl << endl;
-			}
-			else {
-				cout << "Port not found" << endl << endl;
-				isFound = true; //Cancel this whole function
-			}
-			while (arduino.isConnected() && isFound == true) {
-				cout << "Enter your command: " << endl;
-				string data;
-				cin >> data;
-
-				char* charArray = new char[data.size() + 1];
-				copy(data.begin(), data.end(), charArray);
-				charArray[data.size()] = '\n';
-
-				arduino.writeSerialPort(charArray, MAX_DATA_LENGTH);
-				arduino.readSerialPort(output, MAX_DATA_LENGTH);
-
-				cout << ">> " << output << endl;
-
-				delete[] charArray;
-			}
+		//If this command is entered the program will exit
+		if (data.compare("sysexit") == 0)
+		{
+			cout << "Exiting program..." << endl;
 			return 0;
 		}
+
+		char* charArray = new char[data.size() + 1];
+		copy(data.begin(), data.end(), charArray);
+		charArray[data.size()] = '\n';
+
+		arduino.writeSerialPort(charArray, MAX_DATA_LENGTH);
+		arduino.readSerialPort(output, MAX_DATA_LENGTH);
+
+		cout << ">> " << output << endl;
+
+		delete[] charArray;
 	}
-	*/
+
+	return 0;
 }
