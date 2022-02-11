@@ -15,16 +15,18 @@ int main(void) {
 	bool board_detected = false;
 	HANDLE hSerial = 0;
 	SerialPort arduino;
+	arduino.reCycle = false;
+	arduino.selectedPort = 0;
 	for (int i = 0; (i < maxports) && (board_detected != true); i++) 
 	{
 		port = arduino.Gen_Port_Name();
 
 		hSerial = arduino.Init_Serial(port);
 
-		if (hSerial != INVALID_HANDLE_VALUE)
+		if (hSerial != INVALID_HANDLE_VALUE && arduino.reCycle == false)
 			board_detected = arduino.Wait_Ready(hSerial);
 		else
-			continue;
+			continue; //Do a check of next port
 	}
 	
 	if (board_detected == true)
@@ -42,10 +44,9 @@ int main(void) {
 
 	//Similar to wait for milliseconds in c#
 	Sleep(5000); //debugging
-	printf("Arduino Ready!\n\n");
 
 	//[] Make a function that detects if the connected device is a arduino, which the arduino will contain a char that determines the connection
-
+	//Convert this these lines to a seperate function
 	while (arduino.isConnected()) {
 		cout << "Enter your command: ";
 		string data;

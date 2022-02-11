@@ -4,16 +4,15 @@ const char* SerialPort::Gen_Port_Name(void) {
     /* Return ERROR if Max Ports Reached */
 
     //[] Add a few more ports at least up to 12
-    const char* ports[] = { "\\\\.\\COM0", "\\\\.\\COM1", "\\\\.\\COM2", "\\\\.\\COM3", "\\\\.\\COM4" };
-    int currentport = 0;
+    const char* ports[] = { "\\\\.\\COM0", "\\\\.\\COM1", "\\\\.\\COM2", "\\\\.\\COM3", "\\\\.\\COM4", "\\\\.\\COM5", "\\\\.\\COM6", "\\\\.\\COM7", "\\\\.\\COM8", "\\\\.\\COM9", "\\\\.\\COM10"};
 
     //[] Getting next port, might have to use some other way to receive back the port as well cycle through all the ports which the error is based on
-    if (currentport > maxports)
+    if (selectedPort > maxports)
         printf("ERROR"); // No more ports to try
     else
-        currentport++; // Update to next port
+        selectedPort++; // Update to next port
 
-    return(ports[currentport]);
+    return(ports[selectedPort]);
 }
 
 HANDLE SerialPort::Init_Serial(const char* portname) {
@@ -33,6 +32,7 @@ HANDLE SerialPort::Init_Serial(const char* portname) {
     else
     {
         int attempt = serial_params(handler);
+        reCycle = false; //turn off recycle to make sure no error happen on update
 
         if (attempt != (-1))
             return handler;
@@ -46,17 +46,34 @@ int SerialPort::serial_params(HANDLE hSerial) {
     DWORD testRead = 0;
     DCB dcbSerialParams = { 0 };
     COMMTIMEOUTS timeouts = { 0 };
+    //Sets reference of the header
+    SerialPort arduino;
 
     dcbSerialParams.DCBlength = sizeof(dcbSerialParams);
 
+    //[] When these if conditions return an error, make them cycle to next COM port and also check when maxport has been reached to return a definitive error and exit out the program
     if (!GetCommState(hSerial, &dcbSerialParams)) {
         printf("\nError Getting Com Port State!\n\n");
-        return (-1);
+        //[]Insert call to cycle to next port and check if maxport has been reached
+        if (selectedPort > maxports) {
+            return(-1);
+        }
+        else {
+            //Enable a boolean to make Main.cpp run again the cycling of ports
+            reCycle = true;
+        }     
     }
 
     if (!SetCommState(hSerial, &dcbSerialParams)) {
         printf("\n\nError Setting Serial Port STATE!\n\n");
-        return(-1);
+        //[]Insert call to cycle to next port and check if maxport has been reached
+        if (selectedPort > maxports) {
+            return(-1);
+        }
+        else {
+            //Enable a boolean to make Main.cpp run again the cycling of ports
+            reCycle = true;
+        }
     }
 
     if (!GetCommState(this->handler, &dcbSerialParams)) {

@@ -14,7 +14,7 @@ using namespace std;
 class SerialPort
 {
 private:
-    HANDLE handler;
+	HANDLE handler;
 	COMSTAT status;
 	bool connected;
 	DWORD errors;
@@ -27,4 +27,6 @@ public:
 	int readSerialPort(char* buffer, unsigned int buf_size);
 	bool writeSerialPort(char* buffer, unsigned int buf_size);
 	bool isConnected();
+	int selectedPort;
+	bool reCycle;
 };
