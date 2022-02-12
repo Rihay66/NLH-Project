@@ -12,6 +12,9 @@ char incomingData[MAX_DATA_LENGTH];
 const char* port;
 
 int main(void) {
+	//Give the program time to open completely
+	Sleep(2000);
+
 	bool board_detected = false;
 	HANDLE hSerial = 0;
 	SerialPort arduino;
@@ -23,27 +26,31 @@ int main(void) {
 
 		hSerial = arduino.Init_Serial(port);
 
-		if (hSerial != INVALID_HANDLE_VALUE && arduino.reCycle == false)
+		if (hSerial != INVALID_HANDLE_VALUE && arduino.reCycle == false) {
 			board_detected = arduino.Wait_Ready(hSerial);
-		else
+		}
+		else {
+			Sleep(1500); // Used for debug
 			continue; //Do a check of next port
+		}	
 	}
 	
 	if (board_detected == true)
-		cout << "\nBoard Found on Port: %s\n\n" << port << endl;
+		cout << "\nBoard Found on Port: " << port << "\n" << endl;
 	else
 		cout << "\nBoard could not be found!!!\n\n" << endl;
 	
 	//Tells if the boolean system works
 	if (arduino.isConnected()) {
-		printf("Arduino is connected!\n\n");		
+		printf("Arduino is connected!\n\n");	
+		printf("MESSAGE: Use 'sysexit' to exit program!\n\n");
 	}
 	else {
 		printf("ERROR: Arduino is not connected or something went wrong\n\n"); //Might be used to resolve issues with connectivity
 	}
 
 	//Similar to wait for milliseconds in c#
-	Sleep(5000); //debugging
+	Sleep(2500); //debugging
 
 	//[] Make a function that detects if the connected device is a arduino, which the arduino will contain a char that determines the connection
 	//Convert this these lines to a seperate function
@@ -66,7 +73,13 @@ int main(void) {
 		arduino.writeSerialPort(charArray, MAX_DATA_LENGTH);
 		arduino.readSerialPort(output, MAX_DATA_LENGTH);
 
-		cout << ">> " << output << endl;
+		cout << "Write >> " << charArray << "\n" << endl;
+		if ((output != NULL) && (output[0] == '\0')) {
+			cout << "MESSAGE: No read received from device" << "\n" << endl;
+		}
+		else {
+			cout << "Read >> " << output << "\n" << endl;
+		}
 
 		delete[] charArray;
 	}
