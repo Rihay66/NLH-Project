@@ -10,6 +10,7 @@ char output[MAX_DATA_LENGTH];
 char incomingData[MAX_DATA_LENGTH];
 
 const char* port;
+const char* currentPort;
 
 class portCheck {
 public:
@@ -27,10 +28,12 @@ int main(void) {
 	arduino.reCycle = false;
 	arduino.selectedPort = 0;
 	check.connection = false;
+	currentPort = "Empty COM";
 	check.CheckPort(board_detected, arduino, hSerial, arduino.selectedPort);
 
 	//[] Make a function that detects if the connected device is a arduino, which the arduino will contain a char that determines the connection
 	while (check.connection) {
+		//hSerial = arduino.Init_Serial(currentPort);
 		Sleep(1000); //debugging
 		cout << "Enter your command: ";
 		string data;
@@ -54,14 +57,14 @@ int main(void) {
 		copy(data.begin(), data.end(), charArray);
 		charArray[data.size()] = '\n';
 
-		arduino.writeSerialPort(charArray, MAX_DATA_LENGTH);
+		arduino.writeSerialPort(charArray, MAX_DATA_LENGTH, hSerial);
 		arduino.readSerialPort(output, MAX_DATA_LENGTH);
 
 		//cout << "Write >> " << charArray << "\n" << endl;
-		if ((output != NULL) && (output[0] == '\0') && check.connection == true) {
+		if ((output == NULL) && (output[0] == '\0') && check.connection == true) {
 			cout << "MESSAGE: No read received from device" << "\n" << endl;
 		}
-		else if(check.connection == true && (output == NULL)) {
+		else if(check.connection == true && (output != NULL)) {
 			cout << "Read >> " << output << "\n" << endl;
 		}
 
@@ -86,7 +89,9 @@ bool portCheck::CheckPort(bool board_detected, SerialPort arduino, HANDLE hSeria
 
 			hSerial = arduino.Init_Serial(port);
 			if (hSerial != INVALID_HANDLE_VALUE && arduino.reCycle == false) {
+				printf("Getting bytes?");
 				board_detected = arduino.Wait_Ready(hSerial);
+				currentPort = port;
 			}
 			else {
 				Sleep(1500); // Used for debug

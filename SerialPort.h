@@ -25,7 +25,7 @@ public:
 	int Wait_Ready(HANDLE hSerial);
 
 	int readSerialPort(char* buffer, unsigned int buf_size);
-	bool writeSerialPort(char* buffer, unsigned int buf_size);
+	bool writeSerialPort(char* buffer, unsigned int buf_size, HANDLE hSerial);
 	bool isConnected();
 	int selectedPort;
 	bool reCycle;

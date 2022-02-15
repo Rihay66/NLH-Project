@@ -196,15 +196,36 @@ int SerialPort::readSerialPort(char* buffer, unsigned int buf_size)
     return 0;
 }
 
-bool SerialPort::writeSerialPort(char* buffer, unsigned int buf_size)
+bool SerialPort::writeSerialPort(char* buffer, unsigned int buf_size, HANDLE hSerial)
 {
-    DWORD bytesSend;
+    //Send bytes to arduino
+    int Read_Timeout = 0;
+    DWORD testRead = 0;
+    DWORD testWrote = 0;
+    char readystatus[8] = { 0 };
 
-    if (!WriteFile(this->handler, (void*)buffer, buf_size, &bytesSend, 0)) {
-        ClearCommError(this->handler, &this->errors, &this->status);
-        return false;
-    }
-    else return true;
+    WriteFile(hSerial, "~READY~", sizeof(readystatus), &testWrote, NULL);
+
+    FlushFileBuffers(hSerial); // flush buffers to tell Ardunio to bark it's data 
+
+    do {
+        Sleep(1);
+        printf("\nWrote %ld BYTES\n", testWrote);
+    } while (testWrote < 8);
+
+    do
+    {
+        return ReadFile(hSerial, readystatus, 8, &testRead, NULL);
+        Sleep(1);
+        Read_Timeout++;
+    } while ((testRead < 8) && (Read_Timeout <= 100));
+
+    readystatus[7] = '\0';
+    printf("\n\nREADY STATUS: %s\n\n", readystatus);
+    if (strstr(readystatus, "READ1") != NULL)
+        return true; // Board Detected
+    else
+        return false; // Board not here
 }
 
 bool SerialPort::isConnected()
