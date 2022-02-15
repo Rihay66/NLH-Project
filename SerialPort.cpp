@@ -196,36 +196,83 @@ int SerialPort::readSerialPort(char* buffer, unsigned int buf_size)
     return 0;
 }
 
-bool SerialPort::writeSerialPort(char* buffer, unsigned int buf_size, HANDLE hSerial)
+bool SerialPort::writeSerialPort(char* bufferInput, unsigned int buf_size, HANDLE hSerial, const char* port)
 {
-    //Send bytes to arduino
-    int Read_Timeout = 0;
-    DWORD testRead = 0;
-    DWORD testWrote = 0;
-    char readystatus[8] = { 0 };
+    //Send bytes to the connected device
 
-    WriteFile(hSerial, "~READY~", sizeof(readystatus), &testWrote, NULL);
+    //Declare variables and structures
+    DCB dcbSerialParams = { 0 };
+    COMMTIMEOUTS timeouts = { 0 };
 
-    FlushFileBuffers(hSerial); // flush buffers to tell Ardunio to bark it's data 
-
-    do {
-        Sleep(1);
-        printf("\nWrote %ld BYTES\n", testWrote);
-    } while (testWrote < 8);
-
-    do
+    // Open the highest available serial port number
+    fprintf(stderr, "Opening serial port...");
+    hSerial = CreateFileA(static_cast<LPCSTR>(port), GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+    if (hSerial == INVALID_HANDLE_VALUE)
     {
-        return ReadFile(hSerial, readystatus, 8, &testRead, NULL);
-        Sleep(1);
-        Read_Timeout++;
-    } while ((testRead < 8) && (Read_Timeout <= 100));
+        fprintf(stderr, "Error\n");
+        return 1;
+    }
+    else fprintf(stderr, "OK\n");
 
-    readystatus[7] = '\0';
-    printf("\n\nREADY STATUS: %s\n\n", readystatus);
-    if (strstr(readystatus, "READ1") != NULL)
-        return true; // Board Detected
-    else
-        return false; // Board not here
+    // Set device parameters (38400 baud, 1 start bit,
+    // 1 stop bit, no parity)
+    dcbSerialParams.DCBlength = sizeof(dcbSerialParams);
+    if (GetCommState(hSerial, &dcbSerialParams) == 0)
+    {
+        fprintf(stderr, "Error getting device state\n");
+        CloseHandle(hSerial);
+        return 1;
+    }
+
+    dcbSerialParams.BaudRate = CBR_9600; //Serial Num
+    dcbSerialParams.ByteSize = 8; //Amount of bytes to send
+    dcbSerialParams.StopBits = ONESTOPBIT;
+    dcbSerialParams.Parity = NOPARITY;
+    dcbSerialParams.fDtrControl = DTR_CONTROL_ENABLE;
+    if (SetCommState(hSerial, &dcbSerialParams) == 0)
+    {
+        fprintf(stderr, "Error setting device parameters\n");
+        CloseHandle(hSerial);
+        return 1;
+    }
+
+    // Set COM port timeout settings
+    timeouts.ReadIntervalTimeout = 50;
+    timeouts.ReadTotalTimeoutConstant = 50;
+    timeouts.ReadTotalTimeoutMultiplier = 10;
+    timeouts.WriteTotalTimeoutConstant = 50;
+    timeouts.WriteTotalTimeoutMultiplier = 10;
+    if (SetCommTimeouts(hSerial, &timeouts) == 0)
+    {
+        fprintf(stderr, "Error setting timeouts\n");
+        CloseHandle(hSerial);
+        return 1;
+    }
+
+    // Send specified text (remaining command line arguments)
+    DWORD bytes_written, total_bytes_written = 0;
+    fprintf(stderr, "Sending bytes...");
+
+    //'bufferInput' variable is char bytes sent to the connected device
+    if (!WriteFile(hSerial, bufferInput, buf_size, &bytes_written, NULL))
+    {
+        fprintf(stderr, "Error\n");
+        CloseHandle(hSerial);
+        return 1;
+    }
+    fprintf(stderr, "%d bytes written\n", bytes_written);
+    /*
+    // Close serial port
+    fprintf(stderr, "Closing serial port...");
+    if (CloseHandle(hSerial) == 0)
+    {
+        fprintf(stderr, "Error\n");
+        return 1;
+    }
+    fprintf(stderr, "OK\n");
+    */
+    // exit normally
+    return 0;
 }
 
 bool SerialPort::isConnected()
