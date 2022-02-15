@@ -16,12 +16,11 @@ public:
 	bool connection;
 	bool CheckPort(bool board_detected, SerialPort arduino, HANDLE hSerial, int selectedPort);
 	//Returnable value
-	float loopTime();
+	//float loopTime();
 };
 
 int main(void) {
-	//Give the program time to open completely
-	Sleep(2000);
+	//Give the program time to open completely;
 	portCheck check;
 	bool board_detected = false;
 	HANDLE hSerial = 0;
@@ -45,19 +44,23 @@ int main(void) {
 			cout << "\nExiting program...\n" << endl;
 			return 0;
 		}
-		if (data.compare("syschangeport") == 0){
+		if (data.compare("syschangeport") == 0) //Change to next port
+		{
 			board_detected = false;
 			cout << "\nChanging Port...\n" << endl;
-			Sleep(1500);
+			Sleep(1000);
 			arduino.selectedPort++;
 			check.CheckPort(board_detected, arduino, hSerial, arduino.selectedPort);
 		}
-
+		//Transform string to char bytes
 		char* charArray = new char[data.size() + 1];
 		copy(data.begin(), data.end(), charArray);
 		charArray[data.size()] = '\n';
 
+		//Write command into bytes and sent to arduino
 		arduino.writeSerialPort(charArray, MAX_DATA_LENGTH, hSerial, port);
+
+		//This function might need a rewrite
 		arduino.readSerialPort(output, MAX_DATA_LENGTH);
 
 		//cout << "Write >> " << charArray << "\n" << endl;
@@ -76,11 +79,12 @@ int main(void) {
 		return 0;
 	}
 }
-
+/*
 //value must return a value that will be pasted into Sleep()
 float portCheck::loopTime() {
 
 }
+*/
 
 bool portCheck::CheckPort(bool board_detected, SerialPort arduino, HANDLE hSerial, int selectedPort) {
 	for (int i = selectedPort; (i < maxports) && (board_detected != true); i++)

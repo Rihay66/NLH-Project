@@ -2,7 +2,6 @@
 #define ARDUINO_WAIT_TIME 2000
 #define MAX_DATA_LENGTH 255
 
-#define PORT_SIZE 5
 #define maxports 13
 
 #include <windows.h>

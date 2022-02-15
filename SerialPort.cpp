@@ -52,8 +52,6 @@ int SerialPort::serial_params(HANDLE hSerial) {
         return 0;
     }
     else {
-        DWORD testWrote = 0;
-        DWORD testRead = 0;
         DCB dcbSerialParams = { 0 };
         COMMTIMEOUTS timeouts = { 0 };
         //Sets reference of the header
@@ -204,7 +202,7 @@ bool SerialPort::writeSerialPort(char* bufferInput, unsigned int buf_size, HANDL
     DCB dcbSerialParams = { 0 };
     COMMTIMEOUTS timeouts = { 0 };
 
-    // Open the highest available serial port number
+    // Open the set port
     fprintf(stderr, "Opening serial port...");
     hSerial = CreateFileA(static_cast<LPCSTR>(port), GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
     if (hSerial == INVALID_HANDLE_VALUE)
