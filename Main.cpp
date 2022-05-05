@@ -58,7 +58,7 @@ int main(void) {
 		charArray[data.size()] = '\n';
 
 		//Write command into bytes and sent to arduino
-		arduino.writeSerialPort(charArray, MAX_DATA_LENGTH, hSerial, port);
+		arduino.writeSerialPort(charArray, MAX_DATA_LENGTH, port, data, hSerial);
 
 		//This function might need a rewrite
 		arduino.readSerialPort(output, MAX_DATA_LENGTH);

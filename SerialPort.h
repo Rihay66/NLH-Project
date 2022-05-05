@@ -7,6 +7,7 @@
 #include <windows.h>
 #include <stdio.h>
 #include <iostream>
+#include <string>
 
 using namespace std;
 
@@ -24,7 +25,7 @@ public:
 	int Wait_Ready(HANDLE hSerial);
 
 	int readSerialPort(char* buffer, unsigned int buf_size);
-	bool writeSerialPort(char* buffer, unsigned int buf_size, HANDLE hSerial, const char* port);
+	bool writeSerialPort(char* buffer, int buf_size, const char* port, string data, HANDLE hSerial);
 	bool isConnected();
 	int selectedPort;
 	bool reCycle;
