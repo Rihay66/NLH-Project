@@ -1,5 +1,4 @@
 #include "SerialPort.h"
-#include <string>
 
 const char* SerialPort::Gen_Port_Name(void) {
     /* Return ERROR if Max Ports Reached */
