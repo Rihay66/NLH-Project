@@ -1,4 +1,4 @@
-#include"SerialPort.h"
+#include "inc/SerialPort.h"
 
 using namespace std;
 
@@ -6,6 +6,10 @@ char output[MAX_DATA_LENGTH];
 char incomingData[MAX_DATA_LENGTH];
 
 const char* port;
+
+//[] Remake SerialPort library and use the repo https://github.com/dmicha16/simple_serial_port to redo it
+//[] fix the main function and organize the class PortCheck and use pointers to make it memory safe
+
 
 class portCheck {
 public:
