@@ -1,245 +1,108 @@
 #include "../inc/SerialPort.h"
 
-const char* SerialPort::Gen_Port_Name(void) {
-    /* Return ERROR if Max Ports Reached */
+SerialPort::SerialPort(const char* COM_Port, DWORD COM_BAUD_RATE){
+    is_connected = false;
 
-    const char* ports[] = { "NULL PORT", "\\\\.\\COM0", "\\\\.\\COM1", "\\\\.\\COM2", "\\\\.\\COM3", "\\\\.\\COM4", "\\\\.\\COM5", "\\\\.\\COM6", "\\\\.\\COM7", "\\\\.\\COM8", "\\\\.\\COM9", "\\\\.\\COM10", "\\\\.\\COM11", "\\\\.\\COM12", "\\\\.\\COM13", "\\\\.\\COM14"};
+	io = CreateFileA(static_cast<LPCSTR>(COM_Port),
+							GENERIC_READ | GENERIC_WRITE,
+							0,
+							NULL,
+							OPEN_EXISTING,
+							FILE_ATTRIBUTE_NORMAL,
+							NULL);
 
-    if (selectedPort < maxports) {
-        selectedPort++;
-    }
-    
-    return(ports[selectedPort]);
+	if (io == INVALID_HANDLE_VALUE) {
+
+		if (GetLastError() == ERROR_FILE_NOT_FOUND)
+			printf("Warning: Handle was not attached. Reason: %s not available\n", COM_Port);
+	}
+	else {
+
+		DCB dcbSerialParams = { 0 };
+
+		if (!GetCommState(io, &dcbSerialParams)) {
+
+			printf("Warning: Failed to get current serial params");
+		}
+
+		else {
+			dcbSerialParams.BaudRate = COM_BAUD_RATE;
+			dcbSerialParams.ByteSize = 8;
+			dcbSerialParams.StopBits = ONESTOPBIT;
+			dcbSerialParams.Parity = NOPARITY;
+			dcbSerialParams.fDtrControl = DTR_CONTROL_ENABLE;
+
+			if (!SetCommState(io, &dcbSerialParams))
+				printf("Warning: could not set serial port params\n");
+			else {
+				is_connected = true;
+				PurgeComm(io, PURGE_RXCLEAR | PURGE_TXCLEAR);				
+			}
+		}
+	}
 }
 
-HANDLE SerialPort::Init_Serial(const char* portname) {
-    
-    this->connected = false;
-
-    if (selectedPort < maxports) {
-        this->connected = false;
-
-        printf("\n\nPortName: %s\n\n", portname);
-        this->handler = CreateFileA(static_cast<LPCSTR>(portname), GENERIC_READ | GENERIC_WRITE, 0, 0, OPEN_EXISTING, FILE_FLAG_NO_BUFFERING, 0);
-
-        if (handler == INVALID_HANDLE_VALUE && this->connected)
-        {
-            fprintf(stderr, "Error: Invalid Handle value was paste in!\n");
-            this->connected = false;
-            FlushFileBuffers(handler); // flush buffers to tell Ardunio to bark it's data 
-            CloseHandle(handler); // Prevent Handle leaks
-            return INVALID_HANDLE_VALUE; // Move on to next port since this one doesn't exist
-        }
-        else
-        {
-            int attempt = serial_params(handler);
-            reCycle = false; //turn off recycle to make sure no error happen on update
-
-            if (attempt != (-1))
-                return handler;
-            else
-                return INVALID_HANDLE_VALUE;
-        }
-    }
-    else {
-        //printf("\nERROR: No Board is connected on all available ports or program didn't check for more ports"); // No more ports to try
-        return INVALID_HANDLE_VALUE;
-    }
+SerialPort::~SerialPort(){
+    if (is_connected) {
+		is_connected = false;
+		CloseHandle(io);		
+	}
 }
 
-int SerialPort::serial_params(HANDLE hSerial) {
+string SerialPort::ReadSerialPort(int reply_wait_time, string syntax_type){
+    DWORD bytes_read;
+	char inc_msg[1];	
+	string complete_inc_msg;
+	bool began = false;
 
-    if (selectedPort > maxports) {
-        return 0;
-    }
-    else {
-        DCB dcbSerialParams = { 0 };
-        COMMTIMEOUTS timeouts = { 0 };
-        //Sets reference of the header
+	//CustomSyntax(syntax_type);
 
-        dcbSerialParams.DCBlength = sizeof(dcbSerialParams);
+	unsigned long start_time = time(nullptr);
 
-        //[] When these if conditions return an error, make them cycle to next COM port and also check when maxport has been reached to return a definitive error and exit out the program
-        if (!GetCommState(hSerial, &dcbSerialParams)) {
-            printf("\nError Getting Com Port State!\n\n");
-            //[]Insert call to cycle to next port and check if maxport has been reached
-            if (selectedPort > maxports) {
-                return 0;
-            }
-            else {
-                //Enable a boolean to make Main.cpp run again the cycling of ports
-                reCycle = true;
-                //printf("\nCycling To Next Port!\n");
-            }
-        }
+	ClearCommError(io, &errors_, &status_);	
 
-        if (!SetCommState(hSerial, &dcbSerialParams)) {
-            printf("\n\nError Setting Serial Port STATE!\n\n");
-            //[]Insert call to cycle to next port and check if maxport has been reached
-            if (selectedPort > maxports) {
-                return 0;
-            }
-            else {
-                //Enable a boolean to make Main.cpp run again the cycling of ports
-                reCycle = true;
-                //printf("\nCycling To Next Port!\n");
-            }
-        }
+	while ((time(nullptr) - start_time) < reply_wait_time) {
 
-        if (!GetCommState(this->handler, &dcbSerialParams)) {
-            printf("failed to get current serial parameters");
-        }
-        else {
-            dcbSerialParams.BaudRate = CBR_9600;
-            dcbSerialParams.ByteSize = 8;
-            dcbSerialParams.StopBits = ONESTOPBIT;
-            dcbSerialParams.Parity = NOPARITY;
-            dcbSerialParams.fDtrControl = DTR_CONTROL_ENABLE;
+		if (status_.cbInQue > 0) {
+			
+			if (ReadFile(io, inc_msg, 1, &bytes_read, NULL)) {
+				
+				if (inc_msg[0] == f_delimiter || began) {
+					began = true;
 
-            if (!SetCommState(handler, &dcbSerialParams))
-            {
-                printf("ALERT: could not set Serial port parameters\n");
-            }
-            else {
-                this->connected = true;
-                PurgeComm(this->handler, PURGE_RXCLEAR | PURGE_TXCLEAR);
-                Sleep(ARDUINO_WAIT_TIME);
-            }
-        }
-        // To Prevent Timing out the serial port Tell Windows not to wait up for us
+					if (inc_msg[0] == e_delimiter)
+						return complete_inc_msg;
 
-        timeouts.ReadIntervalTimeout = 50;
-        timeouts.ReadTotalTimeoutConstant = 50;
-        timeouts.ReadTotalTimeoutMultiplier = 10;
-        timeouts.WriteTotalTimeoutConstant = 50;
-        timeouts.WriteTotalTimeoutMultiplier = 10;
-
-        if (!SetCommTimeouts(hSerial, &timeouts)) {
-            printf("\n\n Serious Timeout error occured!!\n\n");
-            if (selectedPort < maxports) {
-                printf("\n Cylcing To Next Port!\n\n");
-            }
-            return 0;
-        }
-        return 1;
-    }
+					if (inc_msg[0] != f_delimiter)
+						complete_inc_msg.append(inc_msg, 1);
+				}				
+			}
+			else
+				return "Warning: Failed to receive data.\n";
+		}
+	}
+	return complete_inc_msg;
 }
 
-int SerialPort::Wait_Ready(HANDLE hSerial) {
-    /* This function waits for the ready Status of the Arduino Board */
-      // TODO ERROR HANDLING FOR WRITE AND READFILE FUNCTIONS
+bool SerialPort::WriteSerialPort(char* data_sent){
+    DWORD bytes_sent;	
 
-    int Read_Timeout = 0;
-    DWORD testRead = 0;
-    DWORD testWrote = 0;
-    char readystatus[8] = { 0 };
+	unsigned int data_sent_length = strlen(data_sent);
 
-    WriteFile(hSerial, "~READY~", sizeof(readystatus), &testWrote, NULL);
-
-    FlushFileBuffers(hSerial); // flush buffers to tell Ardunio to bark it's data 
-    /*
-    int iWanted = 8;
-    char* pCurrentBuf = readystatus;
-
-    DWORD result;
-    do {
-        result = ReadFile(hSerial, pCurrentBuf, iWanted, &testRead, NULL);
-        if (result != ERROR_SUCCESS)
-        {
-            // ok, do some good ol' error checking here.
-        }
-        pCurrentBuf += testRead;
-        iWanted -= testRead;
-        Sleep(1);
-        Read_Timeout++;
-
-    } while ((iWanted > 0) && Read_Timeout <= 100);
-    *pCurrentBuf = NULL;
-    */
-    do {
-        Sleep(1);
-        printf("\nWrote %ld BYTES\n", testWrote);
-    } while (testWrote < sizeof(readystatus));
-
-    do
-    {
-        return ReadFile(hSerial, readystatus, sizeof(readystatus), &testRead, NULL);
-        Sleep(1);
-        Read_Timeout++;
-    } while ((testRead < sizeof(readystatus)) && (Read_Timeout <= 100));
-
-    readystatus[sizeof(readystatus) - 1] = '\0';
-    printf("\n\nREADY STATUS: %s\n\n", readystatus);
-    if (strstr(readystatus, "READ1") != NULL)
-        return true; // Board Detected
-    else
-        return false; // Board not here
+	if (!WriteFile(io, (void*)data_sent, data_sent_length, &bytes_sent, NULL)) {
+		ClearCommError(io, &errors_, &status_);
+		return false;
+	}
+	else
+		return true;
 }
 
-int SerialPort::readSerialPort(char* buffer, unsigned int buf_size)
-{
-    DWORD bytesRead;
-    unsigned int toRead = 0;
-
-    ClearCommError(this->handler, &this->errors, &this->status);
-
-    if (this->status.cbInQue > 0) {
-        if (this->status.cbInQue > buf_size) {
-            toRead = buf_size;
-        }
-        else toRead = this->status.cbInQue;
-    }
-
-    if (ReadFile(this->handler, buffer, toRead, &bytesRead, NULL)) return bytesRead;
-
-    return 0;
-}
-
-bool SerialPort::writeSerialPort(char* buffer, int buf_size, const char* port, string data, HANDLE hSerial)
-{
-    //Send bytes to the connected device
-    //Declare variables
-    int Read_Timeout = 0;
-    DWORD bytesSend = 0;
-    DWORD bytesRead = 0;
-    //Turn buffer into bytes and then read file, buf_size must be the size of the buffer
-    char written_byte[8] = { 0 };
-
-    WriteFile(hSerial, "~PENIS~", sizeof(written_byte), &bytesSend, NULL);
-
-    FlushFileBuffers(hSerial); // flush buffers to tell Ardunio to bark it's data 
-
-    do {
-        Sleep(1);
-        printf("\nWrote %ld BYTES\n", bytesSend);
-    } while (bytesSend < sizeof(written_byte));
-
-    do
-    {
-        return ReadFile(hSerial, written_byte, sizeof(written_byte), &bytesRead, NULL);
-        Sleep(1);
-        Read_Timeout++;
-    } while ((bytesRead < sizeof(written_byte)) && (Read_Timeout <= 100));
-
-    written_byte[sizeof(written_byte) - 1] = '\0';
-
-    /*
-    if (!WriteFile(hSerial, buffer, buf_size, &bytesSend, 0)) {
-        printf("\nWrote %ld BYTES\n", bytesSend);
-        ClearCommError(this->handler, &this->errors, &this->status);
-        return false;
-    }
-    else 
-    {
-        printf("\nWrote %ld BYTES\n", bytesSend);
-        return true;
-    }
-    */
-
-    return 1;
-}
-
-bool SerialPort::isConnected()
-{
-    return this->connected;
+bool SerialPort::CloseSerialPort(){
+    if (is_connected) {
+		is_connected = false;
+		CloseHandle(io);
+		return true;
+	}	
+	else
+		return false;
 }
