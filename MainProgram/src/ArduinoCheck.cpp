@@ -6,9 +6,10 @@ const char* ArduinoCheck::checkForBoardPorts(){
     "\\\\.\\COM12", "\\\\.\\COM13", "\\\\.\\COM14"
     };
 
+    //Always cycle one port once by one each every loop
     if(selectedPortNum < 16)
         selectedPortNum++;
-
+    
     return com_ports[selectedPortNum];
 }
 
@@ -16,28 +17,34 @@ const char* ArduinoCheck::boardCheck(){
     
     //Init local variable
     const char* port;
-    bool Hresult;
 
-    for(int i = 0; i < 16; i++){
+    //Cycle through all 16 com ports
+    for(int i = 0; i < 15; i++){
 
         port = checkForBoardPorts();
-        Hresult = verifyBoard(port);
-        if(Hresult){
+
+        //Use whichever port selected and verify it
+        if(verifyBoard(port)){
+            //If the selected port is valid return it
             return port;
         }else{
+            //Continue to the next com port and check if its valid
             continue;
         }  
     }
 
+    //When no port was found to be valid return a null pointer
     return nullptr;
 }
 
 bool ArduinoCheck::verifyBoard(const char* COM_PORT){
 
+    //Create a file to be sent to a com port
     HANDLE io = CreateFileA(static_cast<LPCSTR>(COM_PORT), GENERIC_READ, 0, 0, OPEN_EXISTING, FILE_FLAG_NO_BUFFERING, 0);
 
+    //Check for returning value of the handle
     if(io == INVALID_HANDLE_VALUE){
-        cout << "Error: Invalid port handle" << endl;
+        cout << "Error: Invalid port: " << COM_PORT << endl;
         FlushFileBuffers(io);
         CloseHandle(io);
         return false;
