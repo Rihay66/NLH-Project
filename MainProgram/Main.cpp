@@ -41,7 +41,8 @@ int main(){
 				cout << "Error: no input sent" << endl;
 				return 1;
 			}
-
+			
+			Sleep(1);
 		}
 	}else{
 		cout << "Error: No Arduino board found" << endl;
