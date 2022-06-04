@@ -49,38 +49,18 @@ SerialPort::~SerialPort(){
 	}
 }
 
-string SerialPort::ReadSerialPort(int reply_wait_time, string syntax_type){
+string SerialPort::ReadSerialPort(const int byte_amountToRead){
     DWORD bytes_read;
-	char inc_msg[1];	
+	char inc_msg[byte_amountToRead];	
 	string complete_inc_msg;
-	bool began = false;
 
-	//CustomSyntax(syntax_type);
-
-	unsigned long start_time = time(nullptr);
-
-	ClearCommError(io, &errors_, &status_);	
-
-	while ((time(nullptr) - start_time) < reply_wait_time) {
-
-		if (status_.cbInQue > 0) {
-			
-			if (ReadFile(io, inc_msg, 1, &bytes_read, NULL)) {
-				
-				if (inc_msg[0] == f_delimiter || began) {
-					began = true;
-
-					if (inc_msg[0] == e_delimiter)
-						return complete_inc_msg;
-
-					if (inc_msg[0] != f_delimiter)
-						complete_inc_msg.append(inc_msg, 1);
-				}				
-			}
-			else
-				return "Warning: Failed to receive data.\n";
-		}
+	if (ReadFile(io, inc_msg, byte_amountToRead, &bytes_read, NULL)) {
+		ClearCommError(io, &errors_, &status_);	
+		complete_inc_msg.append(inc_msg, byte_amountToRead);		
 	}
+	else
+		return "Warning: Failed to receive data.\n";
+
 	return complete_inc_msg;
 }
 

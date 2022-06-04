@@ -1,4 +1,13 @@
 #include "../inc/ArduinoCheck.h"
+#include <string>
+
+string skipOption(){
+    cout << "Skip selected port: [y/n] ";
+    string input;
+    cin >> input;
+
+    return input;
+}
 
 const char* ArduinoCheck::checkForBoardPorts(){
     const char * com_ports[16] = {"NULL PORT", "\\\\.\\COM0", "\\\\.\\COM1", "\\\\.\\COM2", "\\\\.\\COM3", "\\\\.\\COM4", 
@@ -23,10 +32,15 @@ const char* ArduinoCheck::boardCheck(){
 
         port = checkForBoardPorts();
 
-        //Use whichever port selected and verify it
+        //Use whichever `port selected and verify it
         if(verifyBoard(port)){
             //If the selected port is valid return it
-            return port;
+            //[]Interrupt program and ask user if to skip selected port
+            if(skipOption() == "y"){
+                continue;
+            }else if(skipOption() == "n"){
+                return port;
+            }
         }else{
             //Continue to the next com port and check if its valid
             continue;

@@ -3,7 +3,7 @@
 
 string rgbinput(){
 	//Input from user in string form
-	cout<< ">> ";
+	cout<< "Enter Command >> ";
 	string inputRead;
 	cin >> inputRead;
 
@@ -32,22 +32,28 @@ int main(){
 
 		while(serial.is_connected){
 			string input = rgbinput();
-
+			
+			//[] Add an option to skip current com port and continue to the next one
 			//Optional user input to exit the program
-			if(input == "sysexit")
+			if(input == "exit"){
+				serial.CloseSerialPort();
 				return 0;
+			}
 
 			//translate into serial bytes
-			char* charArray = new char[input.size() + 1];
-			copy(input.begin(), input.end(), charArray);
-			charArray[input.size()] = '\n';
-			bool is_sent = serial.WriteSerialPort(charArray);
+			char* data = &input[0];
+
+			bool is_sent = serial.WriteSerialPort(data);
+
 			if(is_sent){
 				cout << "Message sent" << endl;
 			}else{
 				cout << "Error: no input sent" << endl;
 				return 1;
 			}
+
+			string readMessage = serial.ReadSerialPort(10);
+			cout << "SerailRead: " << readMessage << endl;
 			
 			Sleep(1);
 		}

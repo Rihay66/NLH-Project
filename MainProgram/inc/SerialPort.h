@@ -23,7 +23,7 @@ class SerialPort{
 
 		SerialPort(const char* com_port, DWORD COM_BAUD_RATE);
 
-		string ReadSerialPort(int replay_wait_time, string syntax_type);
+		string ReadSerialPort(const int byte_amountToRead);
 		bool WriteSerialPort(char* data_sent);
 		bool CloseSerialPort();
 		~SerialPort();
