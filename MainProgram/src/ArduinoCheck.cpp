@@ -34,11 +34,14 @@ const char* ArduinoCheck::boardCheck(){
 
         //Use whichever `port selected and verify it
         if(verifyBoard(port)){
-            //If the selected port is valid return it
-            //[]Interrupt program and ask user if to skip selected port
-            if(skipOption() == "y"){
+            //If the selected port is valid return it but check if user wants to skip the selected port
+            string option = skipOption();
+
+            if(option == "y" || option == "Y"){
+                //Check for other ports
                 continue;
-            }else if(skipOption() == "n"){
+            }else if(option == "n" || option == "N"){
+                //Return the valid port
                 return port;
             }
         }else{
