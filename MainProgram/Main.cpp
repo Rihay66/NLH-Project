@@ -1,7 +1,7 @@
 #include "inc/SerialPort.h"
 #include "inc/ArduinoCheck.h"
 
-string rgbinput(){
+string userInput(){
 	//Input from user in string form
 	cout<< "Enter Command >> ";
 	string inputRead;
@@ -31,9 +31,9 @@ int main(){
 		cout << "Arduino board initialized succesfully" << endl;
 
 		while(serial->is_connected){
-			string input = rgbinput();
+
+			string input = userInput();
 			
-			//[] Add an option to skip current com port and continue to the next one
 			//Optional user input to exit the program
 			if(input == "exit"){
 				serial->CloseSerialPort();
@@ -52,9 +52,9 @@ int main(){
 				return 1;
 			}
 
-			string readMessage = serial->ReadSerialPort(10);
+			string readMessage = serial->ReadSerialPort(11);
 			cout << "SerailRead: " << readMessage << endl;
-			
+
 			Sleep(1);
 		}
 	}else{

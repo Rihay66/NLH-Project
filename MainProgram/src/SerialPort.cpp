@@ -36,7 +36,8 @@ SerialPort::SerialPort(const char* COM_Port, DWORD COM_BAUD_RATE){
 				printf("Warning: could not set serial port params\n");
 			else {
 				is_connected = true;
-				PurgeComm(io, PURGE_RXCLEAR | PURGE_TXCLEAR);				
+				PurgeComm(io, PURGE_RXCLEAR | PURGE_TXCLEAR);
+				verifyBoard(COM_Port);				
 			}
 		}
 	}
@@ -47,6 +48,14 @@ SerialPort::~SerialPort(){
 		is_connected = false;
 		CloseHandle(io);		
 	}
+}
+
+string SerialPort::userPasswordInput(){
+	cout << "Enter password for board: ";
+	string input;
+	cin >> input;
+
+	return input;
 }
 
 string SerialPort::ReadSerialPort(const int byte_amountToRead){
@@ -71,10 +80,42 @@ bool SerialPort::WriteSerialPort(char* data_sent){
 
 	if (!WriteFile(io, (void*)data_sent, data_sent_length, &bytes_sent, NULL)) {
 		ClearCommError(io, &errors_, &status_);
+		printf("Failed to write file\n");
 		return false;
 	}
 	else
 		return true;
+}
+
+bool SerialPort::verifyBoard(const char* com_port){
+
+	string input = userPasswordInput();
+
+	char* dataToSend = &input[0];
+
+	while(is_connected == true){
+
+		bool write = WriteSerialPort(dataToSend);
+
+		if(write){
+			string read = ReadSerialPort(2);
+			cout << "MSG:" << read << endl;
+			if(read == "PC"){
+				cout << "Board verified!" << endl;
+				return true;
+			}else{
+				break;
+			}		
+		}else{
+			break;
+		}
+
+		Sleep(1);
+	}
+
+	cout << "Error: Board no responding, not a arduino" << endl;
+	CloseSerialPort();
+	return false;
 }
 
 bool SerialPort::CloseSerialPort(){
