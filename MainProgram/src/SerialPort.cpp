@@ -58,19 +58,24 @@ string SerialPort::userPasswordInput(){
 	return input;
 }
 
-string SerialPort::ReadSerialPort(const int byte_amountToRead){
-    DWORD bytes_read;
-	char inc_msg[byte_amountToRead];	
+string SerialPort::ReadSerialPort(){
+    DWORD bytes_read;	
 	string complete_inc_msg;
 
-	//Check if the bytes from the COM is empty
+	//Check for errors on the COM
 	if(ClearCommError(io, &errors_, &status_)){
-		if(status_.cbInQue > 0){
-			if (ReadFile(io, inc_msg, byte_amountToRead, &bytes_read, NULL)) {
-				complete_inc_msg.append(inc_msg, byte_amountToRead);
-				//string s(inc_msg, sizeof(inc_msg));
-
-				//[]Translate bytes into strings
+		//Set the amount bytes on the COM
+		int amount_bytes = status_.cbInQue;
+		//Check if the bytes from the COM is empty
+		if(amount_bytes > 0){
+			
+			//Make a char set to the size of the bytes on the COM
+			char inc_msg[amount_bytes];
+			
+			//Read bytes from the Serial
+			if (ReadFile(io, inc_msg, amount_bytes, &bytes_read, NULL)) {
+				//Put every character from the bytes into a string
+				complete_inc_msg.append(inc_msg, amount_bytes);
 			}else{
 				return "Error: reading the Serial.";
 			}
@@ -82,6 +87,7 @@ string SerialPort::ReadSerialPort(const int byte_amountToRead){
 		return "Error: unable to detect errors in COM.";
 	}
 	
+	//Return whatever this string is set
 	return complete_inc_msg;
 }
 
@@ -110,7 +116,7 @@ bool SerialPort::verifyBoard(const char* com_port){
 		bool write = WriteSerialPort(dataToSend);
 
 		if(write){
-			string read = ReadSerialPort(2);
+			string read = ReadSerialPort();
 			cout << "MSG:" << read << endl;
 			if(read == "PC"){
 				cout << "Board verified!" << endl;

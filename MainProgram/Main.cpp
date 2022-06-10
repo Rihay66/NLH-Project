@@ -39,7 +39,7 @@ int main(){
 				serial->CloseSerialPort();
 				return 0;
 			}else if(input == "read"){
-				string readMessage = serial->ReadSerialPort(8);
+				string readMessage = serial->ReadSerialPort();
 				cout << "SerailRead: " << readMessage << endl;
 			}else{
 				//translate into serial bytes

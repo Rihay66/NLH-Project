@@ -24,7 +24,7 @@ class SerialPort{
 
 		bool verifyBoard(const char* com_port);
 
-		string ReadSerialPort(const int byte_amountToRead);
+		string ReadSerialPort();
 		bool WriteSerialPort(char* data_sent);
 		bool CloseSerialPort();
 		~SerialPort();
