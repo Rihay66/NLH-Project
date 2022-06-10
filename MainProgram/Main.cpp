@@ -26,7 +26,7 @@ int main(){
 		delete ar;
 
 		//Initialize the connection with arduino board
-		SerialPort* serial = new SerialPort(com_port, 9600);
+		SerialPort* serial = new SerialPort(com_port, 115200);
 
 		cout << "Arduino board initialized succesfully" << endl;
 
