@@ -64,8 +64,17 @@ string SerialPort::ReadSerialPort(const int byte_amountToRead){
 	string complete_inc_msg;
 
 	if (ReadFile(io, inc_msg, byte_amountToRead, &bytes_read, NULL)) {
-		ClearCommError(io, &errors_, &status_);	
-		complete_inc_msg.append(inc_msg, byte_amountToRead);		
+		//[] Check if the serial is empty
+		complete_inc_msg.append(inc_msg, byte_amountToRead);
+
+		if(!ClearCommError(io, &errors_, &status_)){
+			//Success return value
+			complete_inc_msg.append(inc_msg, byte_amountToRead);
+		}else{
+			//Error return value
+			return "Error: Empty COM serial read.\n";
+		}
+
 	}
 	else
 		return "Warning: Failed to receive data.\n";
