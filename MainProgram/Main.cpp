@@ -52,7 +52,7 @@ int main(){
 				return 1;
 			}
 
-			string readMessage = serial->ReadSerialPort(5);
+			string readMessage = serial->ReadSerialPort(3);
 			cout << "SerailRead: " << readMessage << endl;
 
 			Sleep(1);
