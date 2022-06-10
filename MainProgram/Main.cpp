@@ -41,18 +41,18 @@ int main(){
 			}else if(input == "read"){
 				string readMessage = serial->ReadSerialPort(8);
 				cout << "SerailRead: " << readMessage << endl;
-			}
-
-			//translate into serial bytes
-			char* data = &input[0];
-
-			bool is_sent = serial->WriteSerialPort(data);
-
-			if(is_sent){
-				cout << "Message sent" << endl;
 			}else{
-				cout << "Error: no input sent" << endl;
-				return 1;
+				//translate into serial bytes
+				char* data = &input[0];
+
+				bool is_sent = serial->WriteSerialPort(data);
+
+				if(is_sent){
+					cout << "Message sent" << endl;
+				}else{
+					cout << "Error: no input sent" << endl;
+					return 1;
+				}
 			}
 
 			Sleep(1);
