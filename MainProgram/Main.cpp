@@ -26,7 +26,7 @@ int main(){
 		delete ar;
 
 		//Initialize the connection with arduino board
-		SerialPort* serial = new SerialPort(com_port, 200000);
+		SerialPort* serial = new SerialPort(com_port, 9600);
 
 		cout << "Arduino board initialized succesfully" << endl;
 
@@ -38,6 +38,9 @@ int main(){
 			if(input == "exit"){
 				serial->CloseSerialPort();
 				return 0;
+			}else if(input == "read"){
+				string readMessage = serial->ReadSerialPort(8);
+				cout << "SerailRead: " << readMessage << endl;
 			}
 
 			//translate into serial bytes
@@ -51,9 +54,6 @@ int main(){
 				cout << "Error: no input sent" << endl;
 				return 1;
 			}
-
-			string readMessage = serial->ReadSerialPort(4);
-			cout << "SerailRead: " << readMessage << endl;
 
 			Sleep(1);
 		}
