@@ -1,5 +1,9 @@
 #include "inc/SerialPort.h"
+#include "inc/TimeManager.h"
 #include "inc/ArduinoCheck.h"
+
+timeManager *tManager= new timeManager();
+long long currentTime;
 
 string userInput(){
 	//Input from user in string form
@@ -10,8 +14,7 @@ string userInput(){
 	return inputRead;
 }
 
-int main(){
-
+void serial(){
 	//Initialize arduino check as a pointer
 	ArduinoCheck* ar = new ArduinoCheck;
 	//Initialize local com port to be set to whichever port was valid
@@ -37,7 +40,7 @@ int main(){
 			//Optional user input to exit the program
 			if(input == "exit"){
 				serial->CloseSerialPort();
-				return 0;
+				break;
 			}else if(input == "read"){
 				string readMessage = serial->ReadSerialPort();
 				cout << "SerailRead: " << readMessage << endl;
@@ -49,9 +52,11 @@ int main(){
 
 				if(is_sent){
 					cout << "Message sent" << endl;
+					currentTime = tManager->callTime();
+					cout << "Time: " << ctime(&currentTime) << endl;
 				}else{
 					cout << "Error: no input sent" << endl;
-					return 1;
+					break;
 				}
 			}
 
@@ -59,8 +64,22 @@ int main(){
 		}
 	}else{
 		cout << "Error: No Arduino board found" << endl;
-		return 1;
 	}
+}
+
+void timeSystem(){
+	tManager->setTime();
+}
+
+//[]Make a time system that runs on a thread
+
+int main(){
+	//Initialize programs here
+	std::thread thread_1(timeSystem);
+	std::thread thread_2(serial);
+
+	thread_1.join();
+	thread_2.join();
 
 	return 0;
 }
