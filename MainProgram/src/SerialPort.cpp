@@ -62,6 +62,9 @@ string SerialPort::ReadSerialPort(){
     DWORD bytes_read;	
 	string complete_inc_msg;
 
+	//debug
+	std::this_thread::sleep_for(2000ms);
+
 	//Check for errors on the COM
 	if(ClearCommError(io, &errors_, &status_)){
 		//Set the amount bytes on the COM

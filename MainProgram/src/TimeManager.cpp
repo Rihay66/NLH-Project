@@ -1,7 +1,7 @@
 #include "../inc/TimeManager.h"
 
 void timeManager::setTime(){
-    while(true){
+    while(runClock){
         auto time = std::chrono::system_clock::now();
         std::time_t endtime = std::chrono::system_clock::to_time_t(time);
 

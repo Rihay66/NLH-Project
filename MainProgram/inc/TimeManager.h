@@ -10,6 +10,7 @@ class timeManager{
     private:
         long long currentTime;
     public:
+        bool runClock;
         void setTime();
         long long callTime();
 };

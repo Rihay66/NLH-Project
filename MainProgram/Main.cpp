@@ -60,14 +60,18 @@ void serial(){
 				}
 			}
 
-			Sleep(1);
+			std::this_thread::sleep_for(1ms);
 		}
+		//Tell one of the threads function to stop running checking for the time
+		tManager->runClock = false;
+
 	}else{
 		cout << "Error: No Arduino board found" << endl;
 	}
 }
 
 void timeSystem(){
+	tManager->runClock = true;
 	tManager->setTime();
 }
 
@@ -78,6 +82,7 @@ int main(){
 	std::thread thread_1(timeSystem);
 	std::thread thread_2(serial);
 
+	//Wait for thread to finish 
 	thread_1.join();
 	thread_2.join();
 
