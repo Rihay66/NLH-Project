@@ -67,6 +67,8 @@ void serial(){
 
 	}else{
 		cout << "Error: No Arduino board found" << endl;
+		//Tell one of the threads function to stop running checking for the time
+		tManager->runClock = false;
 	}
 }
 
